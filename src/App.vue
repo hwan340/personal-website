@@ -19,7 +19,8 @@ const scrollTo = (id) => {
         <a @click.prevent="scrollTo('papers')" href="#">Papers</a>
         <a @click.prevent="scrollTo('resume')" href="#">Resume</a>
         <a @click.prevent="scrollTo('interests')" href="#">Interests</a>
-      </div>
+        <a @click.prevent="scrollTo('contact')" href="#">Contact</a> </div>
+      <!-- </div> -->
     </nav>
 
     <header class="hero">
@@ -58,6 +59,12 @@ const scrollTo = (id) => {
           </div>
         </div>
       </div>
+
+      <div class="resume-download">
+        <a href="./resume.pdf" download="Dr_Haozhe_Wang_Resume.pdf" class="btn primary-btn">
+          📄 Download Full Resume
+        </a>
+      </div>
     </section>
 
     <section id="interests" class="section">
@@ -68,6 +75,20 @@ const scrollTo = (id) => {
           <h3>{{ hobby.name }}</h3>
           <p>{{ hobby.desc }}</p>
         </TiltCard>
+      </div>
+    </section>
+
+    <section id="contact" class="section alt-bg">
+      <h2>📬 Get in Touch</h2>
+      <div class="contact-container">
+        <!-- <p>
+          I am currently open to collaborations on <strong>computational neuroscience</strong>, 
+          <strong>visual prostheses</strong>, or discussing the <strong>V1 Saliency Hypothesis</strong>.
+        </p> -->
+        
+        <a :href="`mailto:${profile.email}`" class="btn contact-btn">
+          ✉️ Send me an email
+        </a>
       </div>
     </section>
 
@@ -163,4 +184,64 @@ footer { text-align: center; padding: 40px; color: #888; }
   transform: scale(1.1) rotate(5deg); /* Zooms and tilts slightly */
   box-shadow: 0 15px 30px rgba(66, 184, 131, 0.4); /* glowing green shadow */
 }
+
+/* Resume Download Button Styling */
+.resume-download {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.primary-btn {
+  background-color: var(--primary); /* Uses your green theme */
+  color: white;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 5px 15px rgba(66, 184, 131, 0.4);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px; /* Space between icon and text */
+}
+
+.primary-btn:hover {
+  transform: translateY(-3px); /* Moves up slightly */
+  box-shadow: 0 8px 20px rgba(66, 184, 131, 0.6);
+}
+
+.primary-btn:active {
+  transform: translateY(0); /* Click effect */
+}
+
+/* Contact Section Styling */
+.contact-container {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.contact-container p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  color: #555;
+}
+
+.contact-btn {
+  background-color: var(--text); /* Dark button for contrast */
+  color: white;
+  padding: 15px 40px;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: transform 0.2s, background-color 0.2s;
+  display: inline-block;
+}
+
+.contact-btn:hover {
+  transform: scale(1.05);
+  background-color: var(--primary); /* Turns green on hover */
+}
+
 </style>
