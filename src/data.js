@@ -1,11 +1,12 @@
 export const profile = {
-  name: "Dr. Haozhe Zac Wang",
+  name: "Dr. Haozhe Wang",
   title: "Neural Scientist & Engineer",
-  bio: "Understanding the brain, one neuron at a time.",
+  bio: "I am a neural engineer dedicated to leveraging insights from neuroscience to improve quality of life.",
   email: "zacwang0000@gmail.com",
   socials: [
     { name: "GitHub", url: "https://github.com/hwan340", icon: "🐙" },
-    { name: "LinkedIn", url: "https://www.linkedin.com/in/haozhe-wang-1332aa14a/", icon: "💼" }
+    { name: "LinkedIn", url: "https://www.linkedin.com/in/haozhe-wang-1332aa14a/", icon: "💼" },
+    { name: "Google Scholar", url: "https://scholar.google.com/citations?user=ezVKRCUAAAAJ&hl=en&oi=ao", icon: "📚" }
   ]
 };
 
@@ -30,7 +31,7 @@ export const papers = [
 
 export const interests = [
   { name: "Hiking", emoji: "🏔️", desc: "Exploring nature in Australasia." },
-  { name: "日本語", emoji: "🏯🍡", desc: "Learning greetings and enjoying yakitori." },
+  { name: "日本語", emoji: "🍡", desc: "Learning greetings and enjoying yakitori." },
   { name: "Meditation", emoji: "🧘", desc: "Finding calmness in chaos." }
 ];
 

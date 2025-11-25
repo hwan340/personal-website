@@ -87,13 +87,13 @@ const scrollTo = (id) => {
         </p> -->
         
         <a :href="`mailto:${profile.email}`" class="btn contact-btn">
-          ✉️ Send me an email
+          ✉️ {{profile.email}}
         </a>
       </div>
     </section>
 
     <footer>
-      <p>© 2025 Built with Vue.js & ☕</p>
+      <p>© 2025 Built with Vue.js & 🫖</p>
     </footer>
   </div>
 </template>
