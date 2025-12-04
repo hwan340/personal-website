@@ -29,20 +29,14 @@ const cardTransform = computed(() => {
 <style scoped>
 .tilt-card {
   transition: transform 0.1s ease-out;
-  background: #fff;
+
+  background: var(--card-bg, #fff); 
   border-radius: 15px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  border: 1px solid #eee;
+  border: 1px solid rgba(0,0,0,0.1); /* softer border */
   cursor: pointer;
 }
 
-/* Dark mode support if you add it later */
-@media (prefers-color-scheme: dark) {
-  .tilt-card {
-    background: #1e1e1e;
-    border-color: #333;
-    color: #fff;
-  }
-}
+
 </style>

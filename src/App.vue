@@ -3,24 +3,44 @@ import { ref } from 'vue';
 import { profile, papers, interests, experience } from './data.js';
 import TiltCard from './components/TiltCard.vue';
 import profileImg from './assets/profile.jpg';
+import NeuroSwitch from './components/NeuroSwitch.vue';
+
 
 const currentSection = ref('home');
 
 const scrollTo = (id) => {
   document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
 };
+
+const isSpiking = ref(false);
+
+const handleThemeToggle = (state) => {
+  // 1. Set the theme on the HTML body
+  document.documentElement.setAttribute('data-theme', state);
+  
+  // 2. Trigger the "Spike" animation if turning ON Action Potential
+  if (state === 'active') {
+    isSpiking.value = true;
+    setTimeout(() => {
+      isSpiking.value = false;
+    }, 400); // Duration of the flash
+  }
+};
 </script>
 
 <template>
   <div class="container">
+    <div class="spike-flash" :class="{ 'firing': isSpiking }"></div>
+
     <nav class="navbar">
       <div class="logo">🧠 {{ profile.name }}</div>
       <div class="links">
         <a @click.prevent="scrollTo('papers')" href="#">Papers</a>
         <a @click.prevent="scrollTo('resume')" href="#">Resume</a>
         <a @click.prevent="scrollTo('interests')" href="#">Interests</a>
-        <a @click.prevent="scrollTo('contact')" href="#">Contact</a> </div>
-      <!-- </div> -->
+        <a @click.prevent="scrollTo('contact')" href="#">Contact</a> 
+        <NeuroSwitch @toggle="handleThemeToggle" />
+      </div>
     </nav>
 
     <header class="hero">
@@ -43,7 +63,7 @@ const scrollTo = (id) => {
           <h3>{{ paper.title }}</h3>
           <p class="journal">{{ paper.journal }} ({{ paper.year }})</p>
           <p class="summary">{{ paper.summary }}</p>
-          <a :href="paper.link" class="read-more">Read Paper →</a>
+          <a :href="paper.link" class="read-more">Read Paper</a>
         </TiltCard>
       </div>
     </section>
@@ -101,9 +121,21 @@ const scrollTo = (id) => {
 <style>
 /* Basic Reset & Fonts */
 :root {
+  /* Default (Action Potential / Light Mode) */
   --primary: #42b883; /* Vue Green */
   --text: #2c3e50;
   --bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --nav-bg: rgba(248, 249, 250, 0.9);
+}
+
+/* Resting Potential (Dark Mode) */
+[data-theme="resting"] {
+  --primary: #51aa86; /* Brighter green for contrast against dark */
+  --text: #e2e8f0;    /* Light gray text */
+  --bg: #0f172a;      /* Deep dark blue (Slate-900) */
+  --card-bg: #1e293b; /* Slightly lighter blue for cards */
+  --nav-bg: rgba(15, 23, 42, 0.9);
 }
 
 body {
@@ -111,6 +143,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
+  transition: background 0.5s ease, color 0.5s ease; /* Smooth transition */
 }
 
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
@@ -122,12 +155,18 @@ body {
   padding: 20px 0;
   position: sticky;
   top: 0;
-  background: rgba(248, 249, 250, 0.9);
+  background: var(--nav-bg); /*rgba(248, 249, 250, 0.9);*/
   backdrop-filter: blur(10px);
   z-index: 100;
+  /* align-items: center; */
 }
 .navbar a { text-decoration: none; color: var(--text); margin-left: 20px; font-weight: bold; cursor: pointer;}
 .navbar a:hover { color: var(--primary); }
+
+.links {
+  display: flex;
+  align-items: center;
+}
 
 /* Hero */
 .hero { text-align: center; padding: 100px 0; }
@@ -138,7 +177,8 @@ body {
 .btn {
   display: inline-block;
   background: var(--text);
-  color: white;
+  /* color: white; */
+  color: var(--bg);
   padding: 10px 20px;
   border-radius: 50px;
   text-decoration: none;
@@ -154,9 +194,41 @@ body {
 
 /* Specific Card Styles */
 .journal { color: #888; font-style: italic; }
-.read-more { display: block; margin-top: 15px; color: var(--primary); text-decoration: none; font-weight: bold; }
+/* .read-more { display: block; margin-top: 15px; color: var(--primary); text-decoration: none; font-weight: bold; } */
 .emoji { font-size: 3rem; margin-bottom: 10px; }
-.hobby-card { text-align: center; }
+.hobby-card { text-align: center; background: var(--card-bg);}
+
+/* read-more link style */
+.read-more {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 20px;
+  padding: 8px 16px;
+  background-color: rgba(66, 184, 131, 0.1); /* Transparent Green */
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.read-more:hover {
+  background-color: var(--primary);
+  color: white; /* Invert colors on hover */
+  transform: translateY(-2px);
+}
+
+/* The Arrow Animation */
+.read-more::after {
+  content: '→';
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+}
+
+.read-more:hover::after {
+  transform: translateX(4px); /* Slide arrow to the right */
+}
 
 /* Timeline (Simple) */
 .timeline-item { display: flex; margin-bottom: 20px; border-left: 2px solid var(--primary); padding-left: 20px; }
@@ -181,7 +253,7 @@ footer { text-align: center; padding: 40px; color: #888; }
 
 /* Fun Hover Effect */
 .profile-pic:hover {
-  transform: scale(1.1) rotate(5deg); /* Zooms and tilts slightly */
+  transform: scale(1.2) rotate(-5deg); /* Zooms and tilts slightly */
   box-shadow: 0 15px 30px rgba(66, 184, 131, 0.4); /* glowing green shadow */
 }
 
@@ -192,13 +264,14 @@ footer { text-align: center; padding: 40px; color: #888; }
 }
 
 .primary-btn {
-  background-color: var(--primary); /* Uses your green theme */
-  color: white;
+  background-color: var(--card-bg); /* Uses your green theme */
+  color: var(--text);
   padding: 15px 30px;
   border-radius: 50px;
   font-weight: bold;
   text-decoration: none;
-  box-shadow: 0 5px 15px rgba(66, 184, 131, 0.4);
+  /* box-shadow: 0 5px 15px rgba(66, 184, 131, 0.4); */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
@@ -229,19 +302,44 @@ footer { text-align: center; padding: 40px; color: #888; }
 }
 
 .contact-btn {
-  background-color: var(--text); /* Dark button for contrast */
-  color: white;
+  background-color: var(--card-bg); /* Dark button for contrast */
+  color: var(--text);
   padding: 15px 40px;
   font-size: 1.1rem;
   border-radius: 50px;
   text-decoration: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   transition: transform 0.2s, background-color 0.2s;
   display: inline-block;
 }
 
 .contact-btn:hover {
-  transform: scale(1.05);
-  background-color: var(--primary); /* Turns green on hover */
+  transform: translateY(-3px); /* Moves up slightly */
+  box-shadow: 0 8px 20px rgba(66, 184, 131, 0.6);
+}
+
+/* Spike Flash Animation */
+.spike-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.8);
+  pointer-events: none; /* Let clicks pass through */
+  opacity: 0;
+  z-index: 9999;
+  transition: opacity 0.1s;
+}
+
+.spike-flash.firing {
+  animation: spike-pulse 0.4s ease-out;
+}
+
+@keyframes spike-pulse {
+  0% { opacity: 0; }
+  10% { opacity: 0.6; background-color: #fff; } /* The Peak */
+  100% { opacity: 0; }
 }
 
 </style>
