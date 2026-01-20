@@ -32,10 +32,11 @@ export const papers = [
 export const interests = [
   { name: "Hiking", emoji: "🏔️", desc: "Exploring nature in Australasia." },
   { name: "日本語", emoji: "🍡", desc: "Learning greetings and enjoying yakitori." },
-  { name: "Meditation", emoji: "🧘", desc: "Finding calmness in chaos." }
+  { name: "Tennis", emoji: "🎾", desc: "Trying to play like Stan Wawrinka." }
 ];
 
 export const experience = [
-  { role: "PhD Researcher, Teaching Assistant", company: "Monash University", year: "2021-2025" },
-  { role: "Bachelor of Engineering and Bachelor of Science", company: "Monash University", year: "2017-2021" }
+  { role: "Postdoctoral Research Fellow", company: "Queensland Brain Institute", year: "2026-Present", desc: "Using neurofeedback techniques to enhance cognitive function during decision making." },
+  { role: "PhD Researcher, Teaching Assistant", company: "Monash University", year: "2021-2025", desc: "Conducting research on cortical prosthetic vision and assisting in teaching undergraduate engineering and physiology courses." },
+  { role: "Bachelor of Engineering and Bachelor of Science", company: "Monash University", year: "2017-2021", desc: "Honours degree in Electrical Engineering, Major in Psychology, Minor in Mathematics." }
 ];

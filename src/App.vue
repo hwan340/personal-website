@@ -76,6 +76,7 @@ const handleThemeToggle = (state) => {
           <div class="details">
             <h3>{{ job.role }}</h3>
             <p>{{ job.company }}</p>
+            <p>{{ job.desc }}</p>
           </div>
         </div>
       </div>
