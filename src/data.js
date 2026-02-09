@@ -6,7 +6,7 @@ export const profile = {
   socials: [
     { name: "GitHub", url: "https://github.com/hwan340", icon: "🐙" },
     { name: "LinkedIn", url: "https://www.linkedin.com/in/haozhe-wang-1332aa14a/", icon: "💼" },
-    { name: "Google Scholar", url: "https://scholar.google.com/citations?user=ezVKRCUAAAAJ&hl=en&oi=ao", icon: "📚" }
+    { name: "Google Scholar", url: "https://scholar.google.com/citations?user=ZfvRxqUAAAAJ&hl=en&oi=sra", icon: "📚" }
   ]
 };
 
