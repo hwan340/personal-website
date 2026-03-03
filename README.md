@@ -34,3 +34,9 @@ npm run dev
 ```sh
 npm run build
 ```
+
+### Deploy Website
+
+```sh
+npm run deploy
+```
