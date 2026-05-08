@@ -1,14 +1,27 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, watch } from 'vue';
+
+const props = defineProps({
+  initialState: {
+    type: String,
+    default: 'active',
+  },
+});
 
 const emit = defineEmits(['toggle']);
-const isActive = ref(true); // True = Action Potential (Light), False = Resting (Dark)
+const isActive = ref(props.initialState === 'active');
+
+watch(
+  () => props.initialState,
+  (nextState) => {
+    isActive.value = nextState === 'active';
+  },
+  { immediate: true }
+);
 
 const toggleState = () => {
   isActive.value = !isActive.value;
   emit('toggle', isActive.value ? 'active' : 'resting');
-  
-  // Trigger the "Spike" sound or visual (Optional: add audio here if you want!)
 };
 </script>
 

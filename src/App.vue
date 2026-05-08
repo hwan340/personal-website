@@ -1,65 +1,154 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import SunCalc from 'suncalc';
 import { profile, papers, interests, experience } from './data.js';
 import TiltCard from './components/TiltCard.vue';
 import profileImg from './assets/profile.jpg';
 import NeuroSwitch from './components/NeuroSwitch.vue';
 
+const isNavOpen = ref(false);
+const isSpiking = ref(false);
+const themeState = ref('active');
 
-const currentSection = ref('home');
-
-const scrollTo = (id) => {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+const getThemeStateByTime = () => {
+  const hour = new Date().getHours();
+  return hour >= 19 || hour < 7 ? 'resting' : 'active';
 };
 
-const isSpiking = ref(false);
+const getThemeStateBySun = (latitude, longitude, date = new Date()) => {
+  const times = SunCalc.getTimes(date, latitude, longitude);
 
-const handleThemeToggle = (state) => {
-  // 1. Set the theme on the HTML body
+  if (!times.sunrise || !times.sunset) {
+    return getThemeStateByTime();
+  }
+
+  return date >= times.sunrise && date < times.sunset ? 'active' : 'resting';
+};
+
+const getThemeStateFromLocation = (latitude, longitude) => {
+  return getThemeStateBySun(latitude, longitude);
+};
+
+const getThemeStateFromGeolocation = () => {
+  if (!navigator.geolocation) {
+    return Promise.resolve(getThemeStateByTime());
+  }
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve(
+          getThemeStateFromLocation(position.coords.latitude, position.coords.longitude)
+        );
+      },
+      () => resolve(getThemeStateByTime()),
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60 * 60 * 1000 }
+    );
+  });
+};
+
+const applyTheme = (state, shouldSpike = false) => {
+  themeState.value = state;
   document.documentElement.setAttribute('data-theme', state);
-  
-  // 2. Trigger the "Spike" animation if turning ON Action Potential
-  if (state === 'active') {
+
+  if (shouldSpike && state === 'active') {
     isSpiking.value = true;
     setTimeout(() => {
       isSpiking.value = false;
-    }, 400); // Duration of the flash
+    }, 400);
   }
 };
+
+const credibility = computed(() => [
+  { label: 'Role', value: profile.title },
+  { label: 'Focus', value: profile.focus },
+  { label: 'Papers', value: `${papers.length}+ selected` },
+  { label: 'Based in', value: profile.basedIn },
+]);
+
+const scrollTo = (id) => {
+  const element = document.getElementById(id);
+
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  isNavOpen.value = false;
+};
+
+const handleThemeToggle = (state) => {
+  applyTheme(state, true);
+};
+
+onMounted(async () => {
+  applyTheme(await getThemeStateFromGeolocation());
+});
 </script>
 
 <template>
   <div class="container">
-    <div class="spike-flash" :class="{ 'firing': isSpiking }"></div>
+    <div class="spike-flash" :class="{ firing: isSpiking }"></div>
 
     <nav class="navbar">
       <div class="logo">🧠 {{ profile.name }}</div>
-      <div class="links">
-        <a @click.prevent="scrollTo('papers')" href="#">Papers</a>
-        <a @click.prevent="scrollTo('resume')" href="#">Resume</a>
+
+      <button
+        class="menu-toggle"
+        type="button"
+        :aria-expanded="isNavOpen"
+        aria-label="Toggle navigation"
+        @click="isNavOpen = !isNavOpen"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="links" :data-open="isNavOpen">
+        <a @click.prevent="scrollTo('home')" href="#">Home</a>
+        <a @click.prevent="scrollTo('papers')" href="#">Work</a>
+        <a @click.prevent="scrollTo('resume')" href="#">Experience</a>
         <a @click.prevent="scrollTo('interests')" href="#">Interests</a>
-        <a @click.prevent="scrollTo('contact')" href="#">Contact</a> 
-        <NeuroSwitch @toggle="handleThemeToggle" />
+        <a @click.prevent="scrollTo('contact')" href="#">Contact</a>
+        <NeuroSwitch :initial-state="themeState" @toggle="handleThemeToggle" />
       </div>
     </nav>
 
-    <header class="hero">
+    <header id="home" class="hero">
       <div class="profile-container">
         <img :src="profileImg" alt="Profile Picture" class="profile-pic" />
       </div>
-      <h1>Hello, I'm <span class="highlight">{{ profile.name }}</span></h1>
+
+      <p class="eyebrow">Neural scientist and engineer</p>
+      <h1>{{ profile.heroSubtitle }}</h1>
       <p class="subtitle">{{ profile.bio }}</p>
+
       <div class="social-row">
-        <a v-for="social in profile.socials" :key="social.name" :href="social.url" target="_blank" class="btn">
-          {{ social.icon }} {{ social.name }}
+        <a
+          v-for="social in profile.socials"
+          :key="social.name"
+          :href="social.url"
+          target="_blank"
+          rel="noreferrer"
+          class="btn social-btn"
+        >
+          {{ social.icon }} <span>{{ social.name }}</span>
         </a>
+      </div>
+
+      <div class="credibility-strip">
+        <div v-for="item in credibility" :key="item.label" class="credibility-item">
+          <span class="credibility-label">{{ item.label }}</span>
+          <span class="credibility-value">{{ item.value }}</span>
+        </div>
       </div>
     </header>
 
     <section id="papers" class="section">
-      <h2>📜 Published Research</h2>
+      <h2>📜 Selected Work</h2>
       <div class="grid">
         <TiltCard v-for="paper in papers" :key="paper.id">
+          <p class="paper-tag">{{ paper.highlight }}</p>
           <h3>{{ paper.title }}</h3>
           <p class="journal">{{ paper.journal }} ({{ paper.year }})</p>
           <p class="summary">{{ paper.summary }}</p>
@@ -94,7 +183,6 @@ const handleThemeToggle = (state) => {
         <TiltCard v-for="hobby in interests" :key="hobby.name" class="hobby-card">
           <div class="emoji">{{ hobby.emoji }}</div>
           <h3>{{ hobby.name }}</h3>
-          <p>{{ hobby.desc }}</p>
         </TiltCard>
       </div>
     </section>
@@ -102,110 +190,278 @@ const handleThemeToggle = (state) => {
     <section id="contact" class="section alt-bg">
       <h2>📬 Get in Touch</h2>
       <div class="contact-container">
-        <!-- <p>
-          I am currently open to collaborations on <strong>computational neuroscience</strong>, 
-          <strong>visual prostheses</strong>, or discussing the <strong>V1 Saliency Hypothesis</strong>.
-        </p> -->
-        
+        <p>{{ profile.contactMessage }}</p>
+
         <a :href="`mailto:${profile.email}`" class="btn contact-btn">
-          ✉️ {{profile.email}}
+          ✉️ {{ profile.email }}
         </a>
       </div>
     </section>
 
     <footer>
-      <p>© 2025 Built with Vue.js & 🫖</p>
+      <p>© 2025 Built with Vue.js</p>
     </footer>
   </div>
 </template>
 
 <style>
-/* Basic Reset & Fonts */
 :root {
-  /* Default (Action Potential / Light Mode) */
-  --primary: #42b883; /* Vue Green */
-  --text: #2c3e50;
-  --bg: #f8f9fa;
-  --card-bg: #ffffff;
-  --nav-bg: rgba(248, 249, 250, 0.9);
+  --primary: #2e8b57;
+  --primary-strong: #186a43;
+  --text: #1f2933;
+  --muted: #5b6b7f;
+  --bg: #f5f7f4;
+  --bg-accent: #e5efe8;
+  --card-bg: rgba(255, 255, 255, 0.88);
+  --nav-bg: rgba(245, 247, 244, 0.82);
+  --border: rgba(31, 41, 51, 0.1);
 }
 
-/* Resting Potential (Dark Mode) */
 [data-theme="resting"] {
-  --primary: #51aa86; /* Brighter green for contrast against dark */
-  --text: #e2e8f0;    /* Light gray text */
-  --bg: #0f172a;      /* Deep dark blue (Slate-900) */
-  --card-bg: #1e293b; /* Slightly lighter blue for cards */
-  --nav-bg: rgba(15, 23, 42, 0.9);
+  --primary: #7ad6a3;
+  --primary-strong: #4fbe81;
+  --text: #e5eef6;
+  --muted: #a9b7c7;
+  --bg: #0d1420;
+  --bg-accent: #142132;
+  --card-bg: rgba(18, 27, 40, 0.88);
+  --nav-bg: rgba(13, 20, 32, 0.82);
+  --border: rgba(229, 238, 246, 0.1);
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Avenir Next', 'Segoe UI', sans-serif;
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  transition: background 0.5s ease, color 0.5s ease; /* Smooth transition */
+  transition: background 0.5s ease, color 0.5s ease;
 }
 
-.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+  background: var(--bg);
+}
 
-/* Navigation */
 .navbar {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 20px 0;
   position: sticky;
   top: 0;
-  background: var(--nav-bg); /*rgba(248, 249, 250, 0.9);*/
+  background: var(--bg);
   backdrop-filter: blur(10px);
   z-index: 100;
-  /* align-items: center; */
+  border-bottom: 1px solid var(--border);
 }
-.navbar a { text-decoration: none; color: var(--text); margin-left: 20px; font-weight: bold; cursor: pointer;}
-.navbar a:hover { color: var(--primary); }
+
+.logo {
+  font-weight: 800;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: var(--text);
+  margin-left: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.navbar a:hover {
+  color: var(--primary);
+}
 
 .links {
   display: flex;
   align-items: center;
+  gap: 18px;
 }
 
-/* Hero */
-.hero { text-align: center; padding: 100px 0; }
-.hero h1 { font-size: 3rem; margin-bottom: 10px; }
-.highlight { color: var(--primary); }
-.subtitle { font-size: 1.5rem; color: #666; }
-.social-row { margin-top: 20px; }
-.btn {
-  display: inline-block;
+.menu-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
   background: var(--text);
-  /* color: white; */
+  margin: 3px 0;
+  border-radius: 999px;
+}
+
+.hero {
+  text-align: center;
+  padding: 96px 0 72px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 6vw, 4.8rem);
+  line-height: 1.02;
+  margin: 10px 0 16px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--primary-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.highlight {
+  color: var(--primary);
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--muted);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.social-row {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn {
+  background: var(--text);
   color: var(--bg);
   padding: 10px 20px;
   border-radius: 50px;
   text-decoration: none;
-  margin: 0 10px;
-  transition: transform 0.2s;
+  transition: transform 0.2s, background 0.2s, color 0.2s, border-color 0.2s;
+  font-size: 1rem;
 }
-.btn:hover { transform: scale(1.05); background: var(--primary); }
 
-/* Sections */
-.section { padding: 80px 0; }
-.section h2 { font-size: 2.5rem; margin-bottom: 40px; text-align: center; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+.btn:hover {
+  transform: translateY(-2px);
+  background: var(--primary);
+}
 
-/* Specific Card Styles */
-.journal { color: #888; font-style: italic; }
-/* .read-more { display: block; margin-top: 15px; color: var(--primary); text-decoration: none; font-weight: bold; } */
-.emoji { font-size: 3rem; margin-bottom: 10px; }
-.hobby-card { text-align: center; background: var(--card-bg);}
+.primary-btn {
+  background: var(--primary);
+  color: #fff;
+}
 
-/* read-more link style */
+.primary-btn:hover {
+  background: var(--primary-strong);
+}
+
+.secondary-btn {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.secondary-btn:hover {
+  background: var(--card-bg);
+  color: var(--text);
+}
+
+.social-btn {
+  background: var(--card-bg);
+  color: var(--text);
+  border-color: var(--border);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section {
+  padding: 76px 0;
+}
+
+.section h2 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  margin-bottom: 34px;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.credibility-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 34px;
+}
+
+.credibility-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 16px;
+  text-align: left;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
+}
+
+.credibility-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+.credibility-value {
+  display: block;
+  font-weight: 700;
+}
+
+.journal {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.emoji {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.hobby-card {
+  text-align: center;
+  background: var(--card-bg);
+}
+
+.paper-tag {
+  display: inline-flex;
+  margin: 0 0 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(46, 139, 87, 0.12);
+  color: var(--primary-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .read-more {
   display: inline-flex;
   align-items: center;
   margin-top: 20px;
   padding: 8px 16px;
-  background-color: rgba(66, 184, 131, 0.1); /* Transparent Green */
+  background-color: rgba(46, 139, 87, 0.1);
   color: var(--primary);
   text-decoration: none;
   font-weight: bold;
@@ -216,11 +472,10 @@ body {
 
 .read-more:hover {
   background-color: var(--primary);
-  color: white; /* Invert colors on hover */
+  color: white;
   transform: translateY(-2px);
 }
 
-/* The Arrow Animation */
 .read-more::after {
   content: '→';
   margin-left: 8px;
@@ -228,67 +483,52 @@ body {
 }
 
 .read-more:hover::after {
-  transform: translateX(4px); /* Slide arrow to the right */
+  transform: translateX(4px);
 }
 
-/* Timeline (Simple) */
-.timeline-item { display: flex; margin-bottom: 20px; border-left: 2px solid var(--primary); padding-left: 20px; }
-.year { font-weight: bold; width: 100px; color: var(--primary); }
+.timeline-item {
+  display: flex;
+  margin-bottom: 20px;
+  border-left: 2px solid var(--primary);
+  padding-left: 20px;
+}
 
-footer { text-align: center; padding: 40px; color: #888; }
+.year {
+  font-weight: bold;
+  width: 100px;
+  color: var(--primary);
+}
 
-/* Profile Picture Styling */
+footer {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+}
+
 .profile-container {
   margin-bottom: 20px;
 }
 
 .profile-pic {
-  width: 150px;      /* Adjust size as needed */
+  width: 150px;
   height: 150px;
-  border-radius: 50%; /* Makes it a perfect circle */
-  object-fit: cover; /* Ensures the image doesn't stretch weirdly */
-  border: 4px solid var(--primary); /* Green border matching your theme */
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--primary);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Fun Hover Effect */
 .profile-pic:hover {
-  transform: scale(1.2) rotate(-5deg); /* Zooms and tilts slightly */
-  box-shadow: 0 15px 30px rgba(66, 184, 131, 0.4); /* glowing green shadow */
+  transform: scale(1.2) rotate(-5deg);
+  box-shadow: 0 15px 30px rgba(66, 184, 131, 0.4);
 }
 
-/* Resume Download Button Styling */
 .resume-download {
   text-align: center;
   margin-top: 50px;
 }
 
-.primary-btn {
-  background-color: var(--card-bg); /* Uses your green theme */
-  color: var(--text);
-  padding: 15px 30px;
-  border-radius: 50px;
-  font-weight: bold;
-  text-decoration: none;
-  /* box-shadow: 0 5px 15px rgba(66, 184, 131, 0.4); */
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px; /* Space between icon and text */
-}
-
-.primary-btn:hover {
-  transform: translateY(-3px); /* Moves up slightly */
-  box-shadow: 0 8px 20px rgba(66, 184, 131, 0.6);
-}
-
-.primary-btn:active {
-  transform: translateY(0); /* Click effect */
-}
-
-/* Contact Section Styling */
 .contact-container {
   text-align: center;
   max-width: 600px;
@@ -299,11 +539,11 @@ footer { text-align: center; padding: 40px; color: #888; }
   font-size: 1.2rem;
   line-height: 1.6;
   margin-bottom: 30px;
-  color: #555;
+  color: var(--muted);
 }
 
 .contact-btn {
-  background-color: var(--card-bg); /* Dark button for contrast */
+  background-color: var(--card-bg);
   color: var(--text);
   padding: 15px 40px;
   font-size: 1.1rem;
@@ -315,32 +555,65 @@ footer { text-align: center; padding: 40px; color: #888; }
 }
 
 .contact-btn:hover {
-  transform: translateY(-3px); /* Moves up slightly */
+  transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(66, 184, 131, 0.6);
 }
 
-/* Spike Flash Animation */
-.spike-flash {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(255, 255, 255, 0.8);
-  pointer-events: none; /* Let clicks pass through */
-  opacity: 0;
-  z-index: 9999;
-  transition: opacity 0.1s;
+@media (max-width: 900px) {
+  .credibility-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.spike-flash.firing {
-  animation: spike-pulse 0.4s ease-out;
+@media (max-width: 760px) {
+  .navbar {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    flex-direction: column;
+  }
+
+  .links {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 14px 0 4px;
+  }
+
+  .links a {
+    margin-left: 0;
+  }
+
+  .links[data-open='true'] {
+    display: flex;
+  }
+
+  .hero {
+    padding-top: 72px;
+  }
+
+  .timeline-item {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .year {
+    width: auto;
+  }
 }
 
-@keyframes spike-pulse {
-  0% { opacity: 0; }
-  10% { opacity: 0.6; background-color: #fff; } /* The Peak */
-  100% { opacity: 0; }
-}
+@media (max-width: 520px) {
+  .credibility-strip {
+    grid-template-columns: 1fr;
+  }
 
+  .hero h1 {
+    font-size: 2.35rem;
+  }
+}
 </style>
