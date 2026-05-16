@@ -1,7 +1,9 @@
+import dogImage from './assets/doggie.jpg';
+
 export const profile = {
   name: "Dr. Haozhe Zac Wang",
   title: "Neural Scientist & Engineer",
-  bio: "I am a neural engineer dedicated to leveraging insights from neuroscience to improve quality of life.",
+  bio: "As a neural engineer, I leverage neuroscience to build solutions that improve people's lives. I believe that by decoding the human brain, we can better harness our greatest asset. Outside the lab, I love mixing things up—whether I'm hitting the tennis court, haning out with my dog, experimenting in the kitchen, or unwinding with a great book.",
   heroSubtitle: "Attention, Prediction and Brain-Computer Interfaces",
   role: "Postdoctoral Research Fellow",
   focus: "Cognitive neuroscience",
@@ -38,9 +40,9 @@ export const papers = [
 ];
 
 export const interests = [
-  { name: "Hiking", emoji: "🏔️" },
-  { name: "Tennis", emoji: "🎾" },
-  { name: "Reading", emoji: "📚" }
+  { name: "Hanging out with my dog", emoji: "🐶", image: dogImage },
+  { name: "Chasing after a tennis ball", emoji: "🎾" },
+  { name: "Finding the next best decaf coffee", emoji: "☕️" }
 ];
 
 export const experience = [

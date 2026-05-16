@@ -1,10 +1,11 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import SunCalc from 'suncalc';
 import { profile, papers, interests, experience } from './data.js';
 import TiltCard from './components/TiltCard.vue';
 import profileImg from './assets/profile.jpg';
 import NeuroSwitch from './components/NeuroSwitch.vue';
+import Interests from './pages/Interests.vue';
 
 const isNavOpen = ref(false);
 const isSpiking = ref(false);
@@ -66,6 +67,13 @@ const credibility = computed(() => [
   { label: 'Based in', value: profile.basedIn },
 ]);
 
+const hasContactMessage = computed(() => profile.contactMessage.trim().length > 0);
+
+// Simple hash-based routing for the Interests page (no vue-router required)
+const currentHash = ref(window.location.hash || '');
+const handleHashChange = () => (currentHash.value = window.location.hash || '');
+const showInterests = computed(() => currentHash.value === '#/interests');
+
 const scrollTo = (id) => {
   const element = document.getElementById(id);
 
@@ -82,6 +90,11 @@ const handleThemeToggle = (state) => {
 
 onMounted(async () => {
   applyTheme(await getThemeStateFromGeolocation());
+  window.addEventListener('hashchange', handleHashChange);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('hashchange', handleHashChange);
 });
 </script>
 
@@ -108,12 +121,16 @@ onMounted(async () => {
         <a @click.prevent="scrollTo('home')" href="#">Home</a>
         <a @click.prevent="scrollTo('papers')" href="#">Publications</a>
         <a @click.prevent="scrollTo('resume')" href="#">Experience</a>
-        <a @click.prevent="scrollTo('interests')" href="#">Interests</a>
         <a @click.prevent="scrollTo('contact')" href="#">Contact</a>
         <NeuroSwitch :initial-state="themeState" @toggle="handleThemeToggle" />
       </div>
     </nav>
+    
+    <div v-if="showInterests">
+      <Interests />
+    </div>
 
+    <div v-else class="container-root">
     <header id="home" class="hero">
       <div class="profile-container">
         <img :src="profileImg" alt="Profile Picture" class="profile-pic" />
@@ -177,20 +194,11 @@ onMounted(async () => {
       </div>
     </section>
 
-    <section id="interests" class="section">
-      <h2>🧩 Personal Interests</h2>
-      <div class="grid">
-        <TiltCard v-for="hobby in interests" :key="hobby.name" class="hobby-card">
-          <div class="emoji">{{ hobby.emoji }}</div>
-          <h3>{{ hobby.name }}</h3>
-        </TiltCard>
-      </div>
-    </section>
-
+    
     <section id="contact" class="section alt-bg">
       <h2>📬 Get in Touch</h2>
       <div class="contact-container">
-        <p>{{ profile.contactMessage }}</p>
+        <p v-if="hasContactMessage">{{ profile.contactMessage }}</p>
 
         <a :href="`mailto:${profile.email}`" class="btn contact-btn">
           ✉️ {{ profile.email }}
@@ -201,6 +209,12 @@ onMounted(async () => {
     <footer>
       <p>© 2025 Built with Vue.js</p>
     </footer>
+
+    <a href="#/interests" class="more-floating" aria-label="More interests">
+      <span class="paw">🐾</span>
+      <span class="more-label">More?</span>
+    </a>
+    </div>
   </div>
 </template>
 
@@ -303,13 +317,13 @@ body {
 
 .hero {
   text-align: center;
-  padding: 96px 0 72px;
+  padding: 72px 0 48px;
   max-width: 900px;
   margin: 0 auto;
 }
 
 .hero h1 {
-  font-size: clamp(2.5rem, 6vw, 4.8rem);
+  font-size: clamp(1rem, 5vw, 2rem);
   line-height: 1.02;
   margin: 10px 0 16px;
 }
@@ -328,28 +342,105 @@ body {
 }
 
 .subtitle {
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: var(--muted);
-  max-width: 720px;
+  max-width: 800px;
   margin: 0 auto;
+  text-align: justify;
+  white-space: pre-line;
 }
 
 .social-row {
-  margin-top: 20px;
+  margin-top: 16px;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
+}
+
+.teaser-grid { max-width: 360px; margin: 0 auto 12px; }
+.interests-actions { text-align: center; margin-top: 6px; }
+
+.more-floating {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px 8px 10px;
+  border-radius: 999px 999px 999px 16px;
+  background: color-mix(in srgb, var(--card-bg) 68%, var(--primary) 32%);
+  color: #fff;
+  box-shadow: 0 10px 22px var(--shadow-strong);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  opacity: 0.34;
+  z-index: 200;
+  transform: translate(22%, 22%) scale(0.76);
+  transition: transform 0.18s ease, background 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+}
+
+.more-floating .paw {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.more-floating .more-label {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: max-width 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+}
+
+.more-floating:hover,
+.more-floating:focus-visible {
+  transform: translate(0, 0) scale(1);
+  opacity: 1;
+  background: var(--primary-strong);
+  box-shadow: 0 12px 28px var(--shadow-strong);
+}
+
+.more-floating:hover .more-label,
+.more-floating:focus-visible .more-label {
+  max-width: 7rem;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.more-floating:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+  .more-floating {
+    right: 12px;
+    bottom: 12px;
+    transform: translate(32%, 32%) scale(0.7);
+  }
+
+  .more-floating .more-label {
+    display: none;
+  }
 }
 
 .btn {
   background: var(--text);
   color: var(--bg);
-  padding: 10px 20px;
+  padding: 9px 16px;
   border-radius: 50px;
   text-decoration: none;
   transition: transform 0.2s, background 0.2s, color 0.2s, border-color 0.2s;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .btn:hover {
@@ -383,38 +474,38 @@ body {
   border-color: var(--border);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   box-shadow: 0 10px 20px -10px var(--shadow);
 }
 
 .section {
-  padding: 76px 0;
+  padding: 56px 0;
 }
 
 .section h2 {
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  margin-bottom: 34px;
+  font-size: clamp(1.6rem, 3.2vw, 2.3rem);
+  margin-bottom: 22px;
   text-align: center;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
 }
 
 .credibility-strip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 34px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 22px;
 }
 
 .credibility-item {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 12px 14px;
   text-align: left;
   box-shadow: 0 18px 40px var(--shadow);
 }
@@ -436,11 +527,13 @@ body {
 .journal {
   color: var(--muted);
   font-style: italic;
+  margin: 0;
+  font-size: 0.92rem;
 }
 
 .emoji {
-  font-size: 3rem;
-  margin-bottom: 10px;
+  font-size: 2.2rem;
+  margin-bottom: 8px;
 }
 
 .hobby-card {
@@ -448,30 +541,58 @@ body {
   background: var(--card-bg);
 }
 
+.tilt-card {
+  padding: 16px;
+  border-radius: 14px;
+}
+
 .paper-tag {
   display: inline-flex;
   margin: 0 0 12px;
-  padding: 6px 10px;
+  padding: 5px 9px;
   border-radius: 999px;
   background: rgba(46, 139, 87, 0.12);
   color: var(--primary-strong);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
+.summary,
+.details p:last-of-type {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-clamp: 3;
+  -webkit-line-clamp: 3;
+}
+
+.summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.details h3 {
+  margin-bottom: 6px;
+}
+
+.details p {
+  margin: 0 0 8px;
+}
+
 .read-more {
   display: inline-flex;
   align-items: center;
-  margin-top: 20px;
-  padding: 8px 16px;
+  margin-top: 14px;
+  padding: 7px 14px;
   background-color: rgba(46, 139, 87, 0.1);
   color: var(--primary);
   text-decoration: none;
   font-weight: bold;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   transition: all 0.3s ease;
 }
 
@@ -493,15 +614,17 @@ body {
 
 .timeline-item {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   border-left: 2px solid var(--primary);
-  padding-left: 20px;
+  padding-left: 16px;
+  gap: 14px;
 }
 
 .year {
   font-weight: bold;
-  width: 100px;
+  width: 92px;
   color: var(--primary);
+  font-size: 0.9rem;
 }
 
 footer {
@@ -511,12 +634,12 @@ footer {
 }
 
 .profile-container {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .profile-pic {
-  width: 150px;
-  height: 150px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid var(--primary);
@@ -525,13 +648,13 @@ footer {
 }
 
 .profile-pic:hover {
-  transform: scale(1.2) rotate(-5deg);
+  transform: scale(1.1) rotate(-4deg);
   box-shadow: 0 15px 30px var(--shadow-strong);
 }
 
 .resume-download {
   text-align: center;
-  margin-top: 50px;
+  margin-top: 30px;
 }
 
 .contact-container {
@@ -541,17 +664,17 @@ footer {
 }
 
 .contact-container p {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  margin-bottom: 30px;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 18px;
   color: var(--muted);
 }
 
 .contact-btn {
   background-color: var(--card-bg);
   color: var(--text);
-  padding: 15px 40px;
-  font-size: 1.1rem;
+  padding: 12px 28px;
+  font-size: 1rem;
   border-radius: 50px;
   text-decoration: none;
   box-shadow: 0 10px 30px var(--shadow);
@@ -599,7 +722,7 @@ footer {
   }
 
   .hero {
-    padding-top: 72px;
+    padding-top: 60px;
   }
 
   .timeline-item {
@@ -618,7 +741,11 @@ footer {
   }
 
   .hero h1 {
-    font-size: 2.35rem;
+    font-size: 2.05rem;
+  }
+
+  .section {
+    padding: 46px 0;
   }
 }
 </style>
