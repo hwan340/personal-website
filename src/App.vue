@@ -106,7 +106,7 @@ onMounted(async () => {
 
       <div class="links" :data-open="isNavOpen">
         <a @click.prevent="scrollTo('home')" href="#">Home</a>
-        <a @click.prevent="scrollTo('papers')" href="#">Work</a>
+        <a @click.prevent="scrollTo('papers')" href="#">Publications</a>
         <a @click.prevent="scrollTo('resume')" href="#">Experience</a>
         <a @click.prevent="scrollTo('interests')" href="#">Interests</a>
         <a @click.prevent="scrollTo('contact')" href="#">Contact</a>
@@ -145,7 +145,7 @@ onMounted(async () => {
     </header>
 
     <section id="papers" class="section">
-      <h2>📜 Selected Work</h2>
+      <h2>📜 Selected Publications</h2>
       <div class="grid">
         <TiltCard v-for="paper in papers" :key="paper.id">
           <p class="paper-tag">{{ paper.highlight }}</p>

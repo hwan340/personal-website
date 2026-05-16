@@ -11,8 +11,8 @@ export const profile = {
   socials: [
     { name: "GitHub", url: "https://github.com/hwan340", icon: "🐙" },
     { name: "LinkedIn", url: "https://www.linkedin.com/in/haozhe-wang-1332aa14a/", icon: "💼" },
-    { name: "Google Scholar", url: "https://scholar.google.com/citations?user=ZfvRxqUAAAAJ&hl=en&oi=sra", icon: "📚" },
-    { name: "ORCID", url: "https://orcid.org/0000-0001-8680-2829", icon: "🟢" }
+    { name: "Google Scholar", url: "https://scholar.google.com/citations?user=ZfvRxqUAAAAJ&hl=en&oi=sra", icon: "🎓" },
+    { name: "ORCID", url: "https://orcid.org/0000-0001-8680-2829", icon: "🆔" }
   ]
 };
 
@@ -24,7 +24,7 @@ export const papers = [
     journal: "Journal of Neural Engineering",
     year: "2023",
     link: "https://iopscience.iop.org/article/10.1088/1741-2552/aceca2",
-    summary: "Introduced a realistic MRI-based simulation for cortical prosthetics and showed that traditional models overestimate visual recovery."
+    summary: "Introduced a realistic MRI-based simulation for cortical prosthetics and showed that traditional models might overestimate visual recovery."
   },
   {
     id: 2,
@@ -39,8 +39,8 @@ export const papers = [
 
 export const interests = [
   { name: "Hiking", emoji: "🏔️" },
-  { name: "日本語", emoji: "🍡" },
-  { name: "Tennis", emoji: "🎾" }
+  { name: "Tennis", emoji: "🎾" },
+  { name: "Reading", emoji: "📚" }
 ];
 
 export const experience = [
