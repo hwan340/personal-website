@@ -108,7 +108,7 @@ const toggleState = () => {
   left: 2px;
   z-index: 2;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  box-shadow: 0 0 10px var(--shadow);
 }
 
 /* Active State Styles */
@@ -119,7 +119,7 @@ const toggleState = () => {
 .active-state .soma {
   transform: translateX(63px);
   background-color: var(--primary);
-  box-shadow: 0 0 15px var(--primary); /* Glowing effect */
+  box-shadow: 0 0 15px var(--shadow-strong);
 }
 
 .active-state .label-resting { opacity: 0; }

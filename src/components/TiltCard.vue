@@ -33,8 +33,8 @@ const cardTransform = computed(() => {
   background: var(--card-bg, #fff); 
   border-radius: 15px;
   padding: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  border: 1px solid rgba(0,0,0,0.1); /* softer border */
+  box-shadow: 0 10px 30px var(--shadow);
+  border: 1px solid var(--border);
   cursor: pointer;
 }
 

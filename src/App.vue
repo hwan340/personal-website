@@ -215,6 +215,8 @@ onMounted(async () => {
   --card-bg: rgba(255, 255, 255, 0.88);
   --nav-bg: rgba(245, 247, 244, 0.82);
   --border: rgba(31, 41, 51, 0.1);
+  --shadow: rgba(15, 23, 42, 0.12);
+  --shadow-strong: rgba(15, 23, 42, 0.2);
 }
 
 [data-theme="resting"] {
@@ -227,6 +229,8 @@ onMounted(async () => {
   --card-bg: rgba(18, 27, 40, 0.88);
   --nav-bg: rgba(13, 20, 32, 0.82);
   --border: rgba(229, 238, 246, 0.1);
+  --shadow: rgba(0, 0, 0, 0.38);
+  --shadow-strong: rgba(0, 0, 0, 0.52);
 }
 
 body {
@@ -380,6 +384,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 10px 20px -10px var(--shadow);
 }
 
 .section {
@@ -411,7 +416,7 @@ body {
   border-radius: 20px;
   padding: 16px;
   text-align: left;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 18px 40px var(--shadow);
 }
 
 .credibility-label {
@@ -515,13 +520,13 @@ footer {
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid var(--primary);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 20px var(--shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .profile-pic:hover {
   transform: scale(1.2) rotate(-5deg);
-  box-shadow: 0 15px 30px rgba(66, 184, 131, 0.4);
+  box-shadow: 0 15px 30px var(--shadow-strong);
 }
 
 .resume-download {
@@ -549,14 +554,14 @@ footer {
   font-size: 1.1rem;
   border-radius: 50px;
   text-decoration: none;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px var(--shadow);
   transition: transform 0.2s, background-color 0.2s;
   display: inline-block;
 }
 
 .contact-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(66, 184, 131, 0.6);
+  box-shadow: 0 8px 20px var(--shadow-strong);
 }
 
 @media (max-width: 900px) {
