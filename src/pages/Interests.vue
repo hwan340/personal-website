@@ -15,7 +15,7 @@ import { interests } from '../data.js'
         <img v-if="hobby.image" :src="hobby.image" :alt="hobby.name" class="tile-image" />
         <div v-else class="icon">{{ hobby.emoji }}</div>
         <h3>{{ hobby.name }}</h3>
-        <p>Enjoys {{ hobby.name.toLowerCase() }}.</p>
+        <!-- <p>Enjoys {{ hobby.name.toLowerCase() }}.</p> -->
       </div>
     </div>
 

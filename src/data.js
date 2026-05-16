@@ -42,7 +42,8 @@ export const papers = [
 export const interests = [
   { name: "Hanging out with my dog", emoji: "🐶", image: dogImage },
   { name: "Chasing after a tennis ball", emoji: "🎾" },
-  { name: "Finding the next best decaf coffee", emoji: "☕️" }
+  { name: "Finding the next best decaf coffee", emoji: "☕️" },
+  { name: "Trying to stay on the rock", emoji: "🪨" }
 ];
 
 export const experience = [
